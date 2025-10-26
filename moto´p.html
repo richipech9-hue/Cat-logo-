@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOTOPRO - Venta de Motos y Deshueso</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f4f4f4;
+        color: #333;
+    }
+
+    header {
+        background: #ff0000;
+        color: #333;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 1.8em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    header img {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .btn {
+        background: #0077cc;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .productos {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .producto {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .producto:hover { transform: scale(1.02); }
+
+    .producto img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .producto-info { padding: 15px; }
+    .precio { color: #008f39; font-weight: bold; }
+
+    .boton-whatsapp {
+        display: inline-flex;
+        align-items: center;
+        background: #25d366;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .boton-whatsapp img {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+    }
+
+    footer {
+        background: #222;
+        color: white;
+        text-align: center;
+        padding: 10px;
+    }
+
+    /* ======= FORMULARIO ======= */
+    #adminForm {
+        display: none;
+        background: white;
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    #adminForm input, #adminForm textarea {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    #adminForm button {
+        background: #0077cc;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .acciones-admin {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+    .acciones-admin button {
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        font-weight: bold;
+    }
+
+    .acciones-admin .editar { background: #ffc107; color: #333; }
+    .acciones-admin .eliminar { background: #dc3545; }
+
+    /* ====== MODAL GALERÍA ====== */
+    #galeriaModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 1000;
+    }
+
+    #galeriaModal img {
+        max-width: 90%;
+        max-height: 80%;
+        margin: 10px;
+        border-radius: 10px;
+    }
+
+    #galeriaModal button {
+        background: red;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+        .productos { grid-template-columns: 1fr; }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>
+        <img src="honda.jpg" alt="Moto logo">
+        MOTOPRO
+    </h1>
+    <button class="btn" onclick="modoAdmin()">Administración</button>
+</header>
+
+<!-- FORMULARIO ADMIN -->
+<div id="adminForm">
+    <h3 id="formTitle">Agregar nuevo producto</h3>
+    <input type="hidden" id="editIndex">
+    <input type="text" id="titulo" placeholder="Título del producto" required>
+    <input type="number" id="precio" placeholder="Precio (MXN)" required>
+    <textarea id="descripcion" placeholder="Descripción" rows="3" required></textarea>
+
+    <label>Foto principal:</label>
+    <input type="file" id="fotoPrincipal" accept="image/*">
+
+    <label>Fotos adicionales (hasta 4 imágenes):</label>
+    <input type="file" id="fotosExtras" accept="image/*" multiple>
+
+    <input type="text" id="whatsapp" placeholder="Número WhatsApp (ej. 5215544332211)" required>
+    <button onclick="guardarProducto()">Guardar producto</button>
+</div>
+
+<!-- CATÁLOGO -->
+<main class="productos" id="listaProductos"></main>
+
+<!-- MODAL GALERÍA -->
+<div id="galeriaModal" onclick="cerrarGaleria()">
+    <div id="galeriaContenido"></div>
+    <button onclick="cerrarGaleria()">Cerrar</button>
+</div>
+
+<footer>
+    © 2025 MOTOPRO — Venta de motos y refacciones de deshueso.  
+</footer>
+
+<script>
+let adminActivo = false;
+
+function modoAdmin() {
+    const pass = prompt("Introduce la contraseña de administración:");
+    if (pass === "Motopro2025.7") {
+        adminActivo = true;
+        document.getElementById("adminForm").style.display = "block";
+        mostrarProductos();
+    } else {
+        alert("Contraseña incorrecta.");
+    }
+}
+
+function guardarProducto() {
+    const titulo = document.getElementById("titulo").value;
+    const precio = document.getElementById("precio").value;
+    const descripcion = document.getElementById("descripcion").value;
+    const fotoPrincipal = document.getElementById("fotoPrincipal").files[0];
+    const fotosExtras = document.getElementById("fotosExtras").files;
+    const whatsapp = document.getElementById("whatsapp").value;
+    const editIndex = document.getElementById("editIndex").value;
+
+    if (!titulo || !precio || !descripcion || !whatsapp) {
+        alert("Por favor completa todos los campos obligatorios.");
+        return;
+    }
+
+    const readerPrincipal = new FileReader();
+    readerPrincipal.onload = function() {
+        const imagenPrincipal = readerPrincipal.result;
+        leerFotosExtras(fotosExtras, function(imagenesExtras) {
+            guardarDatosProducto(titulo, precio, descripcion, imagenPrincipal, imagenesExtras.slice(0,4), whatsapp, editIndex);
+        });
+    };
+    if (fotoPrincipal) readerPrincipal.readAsDataURL(fotoPrincipal);
+    else {
+        const productos = JSON.parse(localStorage.getItem("productos")) || [];
+        const anterior = editIndex ? productos[editIndex].imagenPrincipal : "";
+        const extrasPrev = editIndex ? productos[editIndex].imagenesExtras : [];
+        guardarDatosProducto(titulo, precio, descripcion, anterior, extrasPrev, whatsapp, editIndex);
+    }
+}
+
+function leerFotosExtras(files, callback) {
+    let imagenes = [];
+    if (files.length === 0) return callback([]);
+    let leidos = 0;
+    for (let i = 0; i < Math.min(files.length, 4); i++) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagenes.push(e.target.result);
+            leidos++;
+            if (leidos === Math.min(files.length, 4)) callback(imagenes);
+        };
+        reader.readAsDataURL(files[i]);
+    }
+}
+
+function guardarDatosProducto(titulo, precio, descripcion, imagenPrincipal, imagenesExtras, whatsapp, editIndex) {
+    let productos = JSON.parse(localStorage.getItem("productos")) || [];
+    const producto = { titulo, precio, descripcion, imagenPrincipal, imagenesExtras, whatsapp };
+    if (editIndex) productos[editIndex] = producto;
+    else productos.push(producto);
+    localStorage.setItem("productos", JSON.stringify(productos));
+    document.getElementById("adminForm").reset();
+    document.getElementById("editIndex").value = "";
+    document.getElementById("formTitle").textContent = "Agregar nuevo producto";
+    mostrarProductos();
+}
+
+function mostrarProductos() {
+    const contenedor = document.getElementById("listaProductos");
+    contenedor.innerHTML = "";
+    const productos = JSON.parse(localStorage.getItem("productos")) || [];
+    productos.forEach((p, i) => {
+        const div = document.createElement("div");
+        div.classList.add("producto");
+        div.innerHTML = `
+            <img src="${p.imagenPrincipal}" alt="${p.titulo}">
+            <div class="producto-info">
+                <h3>${p.titulo}</h3>
+                <p class="precio">$${p.precio} MXN</p>
+                <p>${p.descripcion}</p>
+                <a class="boton-whatsapp" target="_blank"
+                    href="https://wa.me/${p.whatsapp}?text=Hola,%20estoy%20interesado%20en%20${encodeURIComponent(p.titulo)}">
+                    <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png"> Comprar
+                </a>
+            </div>`;
+        div.addEventListener("click", (e) => {
+            if (!e.target.closest("button") && !e.target.closest("a")) {
+                abrirGaleria(p);
+            }
+        });
+        if (adminActivo) {
+            const acciones = document.createElement("div");
+            acciones.classList.add("acciones-admin");
+            acciones.innerHTML = `
+                <button class="editar" onclick="editarProducto(${i})">Editar</button>
+                <button class="eliminar" onclick="eliminarProducto(${i})">Eliminar</button>`;
+            div.querySelector(".producto-info").appendChild(acciones);
+        }
+        contenedor.appendChild(div);
+    });
+}
+
+function abrirGaleria(p) {
+    const modal = document.getElementById("galeriaModal");
+    const cont = document.getElementById("galeriaContenido");
+    cont.innerHTML = `<img src="${p.imagenPrincipal}" alt="Foto principal">`;
+    p.imagenesExtras.forEach(f => cont.innerHTML += `<img src="${f}" alt="Foto extra">`);
+    modal.style.display = "flex";
+}
+
+function cerrarGaleria() {
+    document.getElementById("galeriaModal").style.display = "none";
+}
+
+function eliminarProducto(i) {
+    if (confirm("¿Eliminar este producto?")) {
+        let productos = JSON.parse(localStorage.getItem("productos")) || [];
+        productos.splice(i, 1);
+        localStorage.setItem("productos", JSON.stringify(productos));
+        mostrarProductos();
+    }
+}
+
+function editarProducto(i) {
+    const productos = JSON.parse(localStorage.getItem("productos")) || [];
+    const p = productos[i];
+    document.getElementById("titulo").value = p.titulo;
+    document.getElementById("precio").value = p.precio;
+    document.getElementById("descripcion").value = p.descripcion;
+    document.getElementById("whatsapp").value = p.whatsapp;
+    document.getElementById("editIndex").value = i;
+    document.getElementById("formTitle").textContent = "Editar producto";
+    window.scrollTo(0, 0);
+}
+
+mostrarProductos();
+</script>
+</body>
+</html>
