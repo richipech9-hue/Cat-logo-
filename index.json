@@ -1,0 +1,8 @@
+{
+  "titulo": "Honda CB500",
+  "precio": 95000,
+  "descripcion": "Moto deportiva 2020, excelente estado",
+  "imagenPrincipal": "imagenes/honda_cb500.jpg",
+  "imagenesExtras": ["imagenes/honda_cb500_1.jpg"],
+  "whatsapp": "5215544332211"
+}
